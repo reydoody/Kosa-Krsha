@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Meow 🎉</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    #win-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(20, 18, 17, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      color: #fbeee6;
+      z-index: 9999;
+      cursor: pointer;
+    }
+
+    #main-content {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      background-color: #fffdf7;
+      color: #000;
+    }
+
+    h1 {
+      color: #ff66a5;
+    }
+
+    p {
+      font-size: 1.1em;
+      line-height: 1.6;
+      margin-top: 3em;
+      margin-bottom: 3em;
+    }
+
+    .rey-img {
+      max-width: 90%;
+      margin-top: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(255, 153, 170, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      #win-overlay {
+        font-size: 1.5em;
+      }
+      
+      #main-content {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+  </style>
+</head>
+<body class="birthday">
+  <!-- Dark overlay -->
+  <div id="win-overlay">
+    <div>😸 Kosa is fed! 🐟</div>
+    <div style="font-size: 0.6em; margin-top: 10px;">(click anywhere to continue)</div>
+  </div>
+
+  <!-- Light theme surprise -->
+  <div id="main-content">
+    <h1>🎂 Happy Birthday My Sweet Rey! 🎉</h1>
+    <p style="text-align: left;">
+      You caught all the treats! Kosa is happy now, just like how I'm happy that you're here by my side.<br><br>
+      Every single day that passes by, as you're growing older, with all the memories we created, and all the ones we've lived through, as all the times I looked into your beautiful eyes, and wandered into a feeling that no one could ever describe.<br><br>
+      Every time our hands collide, and every time I feel your heart next to mine, I always wonder if what I'm feeling is truly one of a lifetime.<br><br>
+      That's why I believe you're special, you've always been a girl filled with mystery and hardly understood, but that's why you're my mystery girl; I always want to try to solve the mysteries you're going through or any that you have gone through, and even if I can't, just know that I'll always be here for you no matter how hard it gets.<br><br>
+      I love you beyond infinity and I always will. ❤️
+    </p>
+    <img src="kosahappy.png" alt="Happy Kosa!" class="rey-img">
+    <audio id="bg-music" autoplay loop muted>
+      <source src="meow.mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="click-sound" preload="auto">
+      <source src="click.mp3" type="audio/mpeg" />
+    </audio>
+  </div>
+
+  <script>
+    const overlay = document.getElementById("win-overlay");
+    const content = document.getElementById("main-content");
+    const music = document.getElementById("bg-music");
+    const clickSound = document.getElementById("click-sound");
+
+    overlay.addEventListener("click", () => {
+      clickSound.currentTime = 0;
+      clickSound.play().catch(e => console.log("Click sound error:", e));
+      
+      overlay.style.display = "none";
+      content.style.display = "block";
+      music.muted = false;
+      music.play();
+    });
+  </script>
+</body>
+</html>

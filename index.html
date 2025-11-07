@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Kosa Krsha</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #fff8e1;
+      color: #333;
+      font-family: 'Arial', 'Comic Sans MS', cursive, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      font-size: 72px;
+      margin-bottom: 40px;
+      color: #ff4081;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 span {
+      color: #333;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      width: 320px;
+    }
+
+    .menu button {
+      font-size: 26px;
+      padding: 16px;
+      background: #fff;
+      color: #333;
+      border: 2px solid #ccc;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .menu button:hover {
+      background: #f0f0f0;
+      transform: scale(1.05);
+    }
+
+    .menu button:focus {
+      outline: none;
+    }
+
+    /* 💖 Custom Popup Styles */
+    #custom-alert {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .alert-box {
+      background: #fff;
+      border: 3px solid #ff4081;
+      border-radius: 20px;
+      padding: 30px 25px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(255, 64, 129, 0.3);
+      animation: popIn 0.3s ease;
+    }
+
+    .alert-box h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #ff4081;
+      font-size: 28px;
+    }
+
+    .alert-box p {
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .alert-box button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #ff4081;
+      border: none;
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: 0.2s;
+    }
+
+    .alert-box button:hover {
+      background: #e73375;
+      transform: scale(1.05);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 48px;
+      }
+      
+      .menu {
+        width: 280px;
+      }
+      
+      .menu button {
+        font-size: 22px;
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1><span>KOSA KRSHA</span><br>THE GAME</h1>
+
+  <div class="menu">
+    <button onclick="location.href='infinite.html'">♾️ Infinite Mode</button>
+    <button onclick="location.href='special.html'">💓 Special Mode</button>
+    <button onclick="showAlert()">ℹ️ Info</button>
+  </div>
+
+  <!-- 💖 Custom Alert -->
+  <div id="custom-alert">
+    <div class="alert-box">
+      <h2>🐾 Kosa Krsha Info</h2>
+      <p>
+        🐟 Catch treats and avoid bombs!<br><br>
+        ♾️ <strong>Infinite Mode:</strong> Endless fun!<br>
+        💓 <strong>Special Mode:</strong> Rey Special Mode!<br><br>
+        If you're reading this, then you're the most beautiful woman to ever exist!
+      </p>
+      <button onclick="closeAlert()">OK</button>
+    </div>
+  </div>
+
+  <script>
+    function showAlert() {
+      document.getElementById("custom-alert").style.display = "flex";
+    }
+
+    function closeAlert() {
+      document.getElementById("custom-alert").style.display = "none";
+    }
+  </script>
+</body>
+</html>

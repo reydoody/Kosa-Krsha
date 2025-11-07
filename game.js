@@ -1,0 +1,342 @@
+// Game variables
+const cat = document.getElementById("cat");
+const game = document.getElementById("game");
+const scoreDisplay = document.getElementById("score");
+const overlay = document.getElementById("game-over-overlay");
+const deathGif = document.getElementById("death-gif");
+const restartText = document.getElementById("restart-text");
+const pauseBtn = document.getElementById("pause-btn");
+const pauseOverlay = document.getElementById("pause-overlay");
+const resumeBtn = document.getElementById("resume-btn");
+const restartBtn = document.getElementById("restart-btn");
+const menuBtn = document.getElementById("menu-btn");
+
+// Audio elements
+const music = new Audio('music.mp3');
+music.loop = true;
+const eatSound = new Audio('nom.mp3');
+const dieSound = new Audio('oof.mp3');
+
+// Game state
+let score = 0;
+let catPos = 1;
+let gameOver = false;
+let paused = false;
+let speed = 2;
+let spawnRate = 1500;
+let bombChance = 0.1;
+const lanePercents = [15, 50, 85];
+const treats = [];
+let lastSpawn = 0;
+
+// Goal score
+const goalScore = 51;
+
+// Messages
+const messages = [
+  "Mmm, fish is yummy!",
+  "Catch me if you can!",
+  "Nom nom nom!",
+  "Is that a bomb?!",
+  "Tuna's my favorite!",
+  "I'm purrfect at this!",
+  "Gotcha!",
+  "I love catching treats!",
+  "I'm the purrfect catcher!",
+  "Mmm, sushi time!",
+  "I'm too fast for these bombs!",
+  "I'm a treat magnet!",
+  "Catching fish is pawsome!",
+  "MIAUU!!",
+  "MIAUO, OUI OUI.",
+  "Look, a snack! I'm talking about u btw.",
+  "You're my sweet princess.",
+  "¡Miau, miau, nom nom!",
+  "I'm a snack attack!",
+  "Sushi, here I come!",
+  "I'm the fastest cat in the world!",
+  "I'm french car!!",
+  "I'm pregnant!",
+  "Me love treat!"
+];
+
+// Shuffle messages
+let shuffledMessages = shuffleArray([...messages]);
+let messageIndex = 0;
+
+// Speech bubble
+const speechBubble = document.createElement("div");
+speechBubble.classList.add("speech-bubble");
+game.appendChild(speechBubble);
+let canShowMessage = true;
+
+// Mobile controls
+const mobileControls = document.createElement("div");
+mobileControls.id = "mobile-controls";
+mobileControls.innerHTML = `
+  <button id="mobile-left">←</button>
+  <button id="mobile-right">→</button>
+`;
+document.body.appendChild(mobileControls);
+
+const mobileLeft = document.getElementById("mobile-left");
+const mobileRight = document.getElementById("mobile-right");
+const mobileMusicBtn = document.createElement("button");
+mobileMusicBtn.id = "mobile-music-btn";
+mobileMusicBtn.textContent = music.paused ? "🔇" : "🔊";
+mobileMusicBtn.setAttribute("aria-label", "Toggle music");
+document.body.appendChild(mobileMusicBtn);
+
+// Position music button
+Object.assign(mobileMusicBtn.style, {
+  position: "fixed",
+  top: "10px",
+  left: "10px",
+  width: "40px",
+  height: "40px",
+  borderRadius: "50%",
+  fontSize: "18px",
+  zIndex: "100",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#ff7f7f",
+  color: "white",
+  border: "none",
+  cursor: "pointer"
+});
+
+// Touch controls
+let touchStartX = 0;
+let touchEndX = 0;
+
+// Functions
+function shuffleArray(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function getNextMessage() {
+  const message = shuffledMessages[messageIndex++];
+  if (messageIndex >= shuffledMessages.length) {
+    shuffledMessages = shuffleArray([...messages]);
+    messageIndex = 0;
+  }
+  return message;
+}
+
+function toggleMusic() {
+  if (music.paused) {
+    music.play();
+    mobileMusicBtn.textContent = "🔊";
+  } else {
+    music.pause();
+    mobileMusicBtn.textContent = "🔇";
+  }
+}
+
+function handleTouchStart(e) {
+  touchStartX = e.changedTouches[0].screenX;
+}
+
+function handleTouchEnd(e) {
+  if (gameOver || paused) return;
+  
+  touchEndX = e.changedTouches[0].screenX;
+  const diffX = touchStartX - touchEndX;
+  
+  if (diffX > 50 && catPos < 2) {
+    catPos++;
+  } else if (diffX < -50 && catPos > 0) {
+    catPos--;
+  }
+  
+  cat.className = `lane-${catPos}`;
+}
+
+function spawnTreat(timestamp) {
+  if (timestamp - lastSpawn > spawnRate) {
+    lastSpawn = timestamp;
+    const item = Math.random() < bombChance
+      ? { emoji: "💣", type: "bad" }
+      : { emoji: ["🐟", "🍣", "🍰"][Math.floor(Math.random() * 3)], type: "good" };
+
+    const lane = lanePercents[Math.floor(Math.random() * 3)];
+    const el = document.createElement("div");
+    el.className = "falling";
+    el.textContent = item.emoji;
+    el.dataset.type = item.type;
+    el.style.left = `${lane}%`;
+    game.appendChild(el);
+    treats.push({ el, y: 0, type: item.type });
+
+    // ENDLESS MODE DIFFICULTY
+    speed = 2 + Math.floor(score / 10) * 0.5;
+    spawnRate = Math.max(300, 1500 - score * 10);
+    bombChance = Math.min(0.5, 0.1 + score * 0.002);
+  }
+}
+
+function loop(timestamp) {
+  if (gameOver) return;
+  if (!paused) {
+    spawnTreat(timestamp);
+    treats.forEach((t, i) => {
+      t.y += speed;
+      t.el.style.top = `${t.y}px`;
+      const rectT = t.el.getBoundingClientRect();
+      const rectC = cat.getBoundingClientRect();
+      if (rectT.bottom >= rectC.top && rectT.left < rectC.right && rectT.right > rectC.left) {
+        clearTreat(i);
+        if (t.type === "bad") return endGame();
+        score++;
+        scoreDisplay.textContent = `Score: ${score}`;
+
+        eatSound.play();
+
+        if (canShowMessage) {
+          canShowMessage = false;
+          const message = getNextMessage();
+          speechBubble.textContent = message;
+          speechBubble.style.display = "block";
+          const catRect = cat.getBoundingClientRect();
+          speechBubble.style.left = `${catRect.left + catRect.width / 2 - speechBubble.offsetWidth / 2}px`;
+          speechBubble.style.top = `${catRect.top - 170}px`;
+
+          setTimeout(() => {
+            speechBubble.style.opacity = "0";
+          }, 0);
+
+          setTimeout(() => {
+            speechBubble.style.display = "none";
+            speechBubble.style.opacity = "1";
+            canShowMessage = true;
+          }, 3000);
+        }
+      } else if (t.y > game.clientHeight) {
+        clearTreat(i);
+      }
+    });
+  }
+
+  if (score >= goalScore) {
+     window.location.href = "meow.html";
+  }
+
+  requestAnimationFrame(loop);
+}
+
+function clearTreat(index) {
+  treats[index].el.remove();
+  treats.splice(index, 1);
+}
+
+function endGame() {
+  gameOver = true;
+  cat.textContent = '';
+  cat.style.backgroundImage = "url('kosabye.gif')";
+  cat.style.backgroundSize = "cover";
+  cat.style.borderRadius = "20px";
+  overlay.style.display = 'flex';
+  deathGif.style.display = 'none';
+  restartText.style.display = 'block';
+
+  dieSound.play();
+  music.pause();
+
+  overlay.onclick = () => {
+    location.reload();
+  };
+}
+
+// Global variable to store music state (paused or playing)
+let isMusicPaused = false;
+
+// Pause and resume game with music controls
+pauseBtn.onclick = () => { 
+  paused = true; 
+  pauseOverlay.style.display = 'flex'; 
+  // Store the music state before pausing
+  isMusicPaused = music.paused;
+  music.pause(); // Pause the music
+};
+
+resumeBtn.onclick = () => { 
+  paused = false; 
+  pauseOverlay.style.display = 'none'; 
+  // Resume music based on the stored state
+  if (!isMusicPaused) {
+    music.play();
+    mobileMusicBtn.textContent = "🔊";
+  } else {
+    music.pause();
+    mobileMusicBtn.textContent = "🔇";
+  }
+};
+
+mobileMusicBtn.addEventListener("click", toggleMusic);
+
+// Event listeners
+window.addEventListener("keydown", e => {
+  if (gameOver || paused) return;
+
+  if ((e.key === "ArrowLeft" || e.key === "a" || e.key === "A") && catPos > 0) catPos--;
+  if ((e.key === "ArrowRight" || e.key === "d" || e.key === "D") && catPos < 2) catPos++;
+  if (e.key === "r" || e.key === "R") location.reload();
+  if (e.key === "m" || e.key === "M") toggleMusic();
+
+  cat.className = `lane-${catPos}`;
+});
+
+mobileLeft.addEventListener("click", () => {
+  if (catPos > 0) catPos--;
+  cat.className = `lane-${catPos}`;
+});
+
+mobileRight.addEventListener("click", () => {
+  if (catPos < 2) catPos++;
+  cat.className = `lane-${catPos}`;
+});
+
+mobileMusicBtn.addEventListener("click", toggleMusic);
+game.addEventListener("touchstart", handleTouchStart, false);
+game.addEventListener("touchend", handleTouchEnd, false);
+
+// Add instruction for "M" and "R" to top left corner (hidden on mobile)
+const instructions = document.createElement("div");
+instructions.textContent = "Press 'M' to toggle music, 'R' to reset the game.";
+Object.assign(instructions.style, {
+  position: "absolute",
+  top: "10px",
+  left: "60px",
+  fontSize: "16px",
+  color: "#333"
+});
+game.appendChild(instructions);
+
+if (window.innerWidth <= 768) {
+  instructions.style.display = "none";
+}
+
+// Prevent zoom on double-tap
+document.addEventListener('dblclick', function(e) {
+  e.preventDefault();
+}, { passive: false });
+
+// Add this to all buttons to prevent tap highlight
+document.querySelectorAll('button').forEach(button => {
+  button.style.webkitTapHighlightColor = 'transparent';
+});
+
+// Start game
+requestAnimationFrame(loop);
+
+// Menu Button to navigate to index.html
+menuBtn.onclick = () => {
+  location.href = "index.html"; // This will redirect to the index.html page (Main Menu)
+};
+
+// Restart Button to refresh the game
+restartBtn.onclick = () => {
+  location.reload(); // This will reload the page and restart the game
+};
+
